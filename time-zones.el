@@ -69,6 +69,20 @@ display a ☽ symbol."
   :type 'boolean
   :group 'time-zones)
 
+(defcustom time-zones-sorting-function #'time-zones-sort-ascending
+  "Function used to sort cities in the display.
+The function should accept two arguments: CITIES (list) and TIME (time value).
+It should return a sorted list of cities.
+
+Built-in options:
+  `time-zones-sort-ascending'  - Sort from earliest to latest (default)
+  `time-zones-sort-descending' - Sort from latest to earliest
+
+Example:
+  (setq time-zones-sorting-function #\\='time-zones-sort-descending)"
+  :type 'function
+  :group 'time-zones)
+
 (defcustom time-zones-custom-timezones
   '(((timezone . "UTC")
      (flag . "🕒")
@@ -135,7 +149,7 @@ Each item is an alist containing keys like:
 
 (defun time-zones--cursor-show ()
   "Show the cursor and reset timer.
-Ignores time-zones interactive commands to keep cursor hidden."
+Ignores `time-zones' interactive commands to keep cursor hidden."
   (unless (and (symbolp this-command)
                (string-prefix-p "time-zones-" (symbol-name this-command)))
     (when time-zones--cursor-hidden
@@ -486,14 +500,21 @@ Returns an alist of (IANA-TZ . POSIX-TZ) pairs."
         base-time
       (time-zones--round-to-15-minutes base-time))))
 
-(defun time-zones--sort-cities-by-time (cities time)
-  "Sort CITIES in relation to TIME.
-Returns a new list sorted chronologically, accounting for date changes."
+(defun time-zones-sort-ascending (cities time)
+  "Sort CITIES in ascending chronological order for TIME.
+Returns a new list sorted from earliest to latest time.
+Accounts for date changes across timezones."
   (sort (copy-sequence cities)
         (lambda (city1 city2)
           (let* ((time1 (string-to-number (format-time-string "%Y%m%d%H%M" time (map-elt city1 'timezone))))
                  (time2 (string-to-number (format-time-string "%Y%m%d%H%M" time (map-elt city2 'timezone)))))
             (< time1 time2)))))
+
+(defun time-zones-sort-descending (cities time)
+  "Sort CITIES in descending chronological order for TIME.
+Returns a new list sorted from latest to earliest time.
+Accounts for date changes across timezones."
+  (reverse (time-zones-sort-ascending cities time)))
 
 (defun time-zones--format-utc-offset (time timezone)
   "Format UTC offset for TIMEZONE at TIME as a string like `UTC-6' or `UTC+5:30'.
@@ -625,8 +646,8 @@ and MAX-OFFSET-WIDTH."
              " help")))
     (insert title)
     (when time-zones--city-list
-      (let* ((sorted-cities (time-zones--sort-cities-by-time
-                             time-zones--city-list local-time))
+      (let* ((sorted-cities (funcall time-zones-sorting-function
+                                     time-zones--city-list local-time))
              (max-location-width
               (apply #'max
                      (mapcar (lambda (city)
