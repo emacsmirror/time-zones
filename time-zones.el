@@ -378,7 +378,6 @@ Returns an alist of (IANA-TZ . POSIX-TZ) pairs."
     (seq-doseq (timezone time-zones-custom-timezones)
       (puthash (format "%s %s"
                        (or (map-elt timezone 'flag)
-                           (time-zones--country-flag (map-elt timezone 'timezone))
                            time-zones--fallback-flag)
                        (or (map-elt timezone 'city)
                            (map-elt timezone 'state)
@@ -604,7 +603,6 @@ and MAX-OFFSET-WIDTH."
                "☽" " ")
            (format-time-string "%R" local-time (map-elt city 'timezone))
            (or (map-elt city 'flag)
-               (time-zones--country-flag (map-elt city 'country))
                time-zones--fallback-flag)
            (propertize (or (map-elt city 'city)
                            (map-elt city 'state)
