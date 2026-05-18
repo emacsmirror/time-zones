@@ -308,7 +308,7 @@ Uses `completing-read' for selection."
   (time-zones--refresh-display))
 
 (defvar time-zones--timezones-url
-  "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/json/countries%2Bstates%2Bcities.json.gz"
+  "https://github.com/dr5hn/countries-states-cities-database/releases/download/v3.2-export.2/json-countries+states+cities.json.gz"
   "URL for countries, states, and cities database.")
 
 (defvar time-zones--timezones-cache nil
